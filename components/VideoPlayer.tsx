@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { VideoLink } from '../types';
 import { PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon, ExpandIcon, ShrinkIcon } from './Icons';
 
-// FIX: Define VideoPlayerProps interface for the component's props.
 interface VideoPlayerProps {
   video: VideoLink | null;
 }
@@ -76,31 +75,41 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
 
   useEffect(() => {
     if (isApiReady && video && playerContainerRef.current) {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
+        let player: any = null;
 
-      const player = new (window as any).YT.Player(playerContainerRef.current, {
-        height: '100%',
-        width: '100%',
-        videoId: video.videoId,
-        playerVars: {
-          'autoplay': 1,
-          'controls': 0, // We use custom controls
-          'rel': 0,
-          'showinfo': 0,
-          'modestbranding': 1,
-          'iv_load_policy': 3,
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange,
-        },
-      });
-      playerRef.current = player;
+        if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+        }
+
+        player = new (window as any).YT.Player(playerContainerRef.current, {
+            height: '100%',
+            width: '100%',
+            videoId: video.videoId,
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0, // We use custom controls
+                'rel': 0,
+                'showinfo': 0,
+                'modestbranding': 1,
+                'iv_load_policy': 3,
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange,
+            },
+        });
+        playerRef.current = player;
+
+        // This is the crucial cleanup function. It's called when the component unmounts.
+        return () => {
+            if (player) {
+                player.destroy();
+            }
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
+        };
     }
   }, [isApiReady, video]);
 

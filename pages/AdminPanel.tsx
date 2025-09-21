@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { Program, Subject, Chapter, VideoLink, Year, Student, ActivityLog } from '../types';
-// FIX: Changed XIcon to XMarkIcon as XIcon is not an exported member of ../components/Icons.
 import { BookOpenIcon, PencilIcon, TrashIcon, PlusIcon, CheckIcon, XMarkIcon, ClipboardListIcon, UsersIcon, ChartBarIcon, ChevronDownIcon } from '../components/Icons';
 import { getYouTubeVideoId } from '../constants';
 
