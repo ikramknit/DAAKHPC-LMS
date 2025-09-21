@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { ChevronDownIcon } from './Icons';
+import { ChevronDownIcon, SearchIcon } from './Icons';
 import type { Program } from '../types';
 
 interface HeaderProps {
@@ -10,6 +11,8 @@ interface HeaderProps {
   onProgramChange: (index: number) => void;
   onYearChange: (index: number) => void;
   onSubjectChange: (index: number) => void;
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -20,6 +23,8 @@ const Header: React.FC<HeaderProps> = ({
   onProgramChange,
   onYearChange,
   onSubjectChange,
+  searchTerm,
+  onSearchChange,
 }) => {
   const selectedProgram = programs[selectedProgramIndex];
   const years = selectedProgram?.years || [];
@@ -49,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200">
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-16 z-40">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-4">
@@ -65,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
         <div className="py-4 border-t border-slate-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Dropdown
               id="program-select"
               label="Select Course"
@@ -73,11 +78,15 @@ const Header: React.FC<HeaderProps> = ({
               onChange={(e) => onProgramChange(parseInt(e.target.value, 10))}
               disabled={programs.length === 0}
             >
-              {programs.map((program, index) => (
-                <option key={program.id} value={index}>
-                  {program.name}
-                </option>
-              ))}
+              {programs.length > 0 ? (
+                programs.map((program, index) => (
+                  <option key={program.id} value={index}>
+                    {program.name}
+                  </option>
+                ))
+              ) : (
+                <option>No courses found</option>
+              )}
             </Dropdown>
 
             <Dropdown
@@ -115,6 +124,25 @@ const Header: React.FC<HeaderProps> = ({
                 <option>No subjects available</option>
               )}
             </Dropdown>
+
+            <div>
+               <label htmlFor="search-input" className="block text-sm font-medium text-slate-600 mb-1">
+                Search Content
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <SearchIcon className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                    type="search"
+                    id="search-input"
+                    value={searchTerm}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    placeholder="e.g., 'Anatomy', 'Blood', etc."
+                    className="w-full bg-white border border-slate-300 rounded-lg py-2.5 pl-10 pr-4 text-base text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

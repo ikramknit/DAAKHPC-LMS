@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Program, Subject, Chapter, VideoLink, Year, Student, ActivityLog } from '../types';
-import { BookOpenIcon, PencilIcon, TrashIcon, PlusIcon, CheckIcon, XIcon, ClipboardListIcon, UsersIcon, ChartBarIcon, ChevronDownIcon } from '../components/Icons';
+// FIX: Changed XIcon to XMarkIcon as XIcon is not an exported member of ../components/Icons.
+import { BookOpenIcon, PencilIcon, TrashIcon, PlusIcon, CheckIcon, XMarkIcon, ClipboardListIcon, UsersIcon, ChartBarIcon, ChevronDownIcon } from '../components/Icons';
 import { getYouTubeVideoId } from '../constants';
 
 interface AdminPanelProps {
@@ -425,7 +426,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                                                              <div className="flex-grow flex items-center gap-2 p-2 bg-blue-50 rounded-md">
                                                                 <input type="text" value={editingSubject.name} onChange={(e) => setEditingSubject({...editingSubject, name: e.target.value})} className="form-input-sm flex-grow"/>
                                                                 <button onClick={() => handleSaveSubject(program.id, year.id, subject.id)} className="btn-icon-xs text-green-600 hover:bg-green-100"><CheckIcon className="h-4 w-4"/></button>
-                                                                <button onClick={handleCancelEdit} className="btn-icon-xs text-slate-500 hover:bg-slate-100"><XIcon className="h-4 w-4"/></button>
+                                                                <button onClick={handleCancelEdit} className="btn-icon-xs text-slate-500 hover:bg-slate-100"><XMarkIcon className="h-4 w-4"/></button>
                                                             </div>
                                                         ) : (
                                                             <div className="flex justify-between items-center group">
@@ -649,10 +650,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
           @media screen and (max-width: 767px) {
             .responsive-table thead { display: none; }
             .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; }
-            .responsive-table tr { margin-bottom: 1.5rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); overflow: hidden; }
+            .responsive-table tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); overflow: hidden; }
             .responsive-table td { padding: 0.75rem 1rem; text-align: right; position: relative; border-bottom: 1px solid #e2e8f0; }
             .responsive-table tr td:last-child { border-bottom: 0; }
-            .responsive-table td::before { content: attr(data-label); position: absolute; left: 1rem; font-weight: 600; text-align: left; color: #4a5568; }
+            .responsive-table td::before { content: attr(data-label); position: absolute; left: 1rem; font-weight: 600; text-align: left; color: #475569; }
           }
         `}</style>
     </div>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import VideoPlayer from '../components/VideoPlayer';
 import Header from '../components/Header';
-import type { Program, VideoLink, Student, ActivityLog } from '../types';
+import type { Program, VideoLink, Student, ActivityLog, Year, Subject, Chapter } from '../types';
 
 type CurrentUser = {
   role: 'student' | 'admin' | 'guest';
@@ -17,11 +18,58 @@ interface DashboardPageProps {
 }
 
 const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, onNavigate, onLogActivity }) => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgramIndex, setSelectedProgramIndex] = useState(0);
   const [selectedYearIndex, setSelectedYearIndex] = useState(0);
   const [selectedSubjectIndex, setSelectedSubjectIndex] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<VideoLink | null>(null);
   const [watchState, setWatchState] = useState<{ video: VideoLink; chapterId: number; startTime: number } | null>(null);
+
+  const filteredPrograms = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return programs;
+    }
+
+    const lowercasedFilter = searchTerm.toLowerCase();
+
+    const filterVideos = (videos: VideoLink[]) => videos.filter(video => video.title.toLowerCase().includes(lowercasedFilter));
+    const filterChapters = (chapters: Chapter[]) => {
+      return chapters.map(chapter => {
+        if (chapter.title.toLowerCase().includes(lowercasedFilter)) return chapter;
+        const filteredVideos = filterVideos(chapter.videos);
+        return filteredVideos.length > 0 ? { ...chapter, videos: filteredVideos } : null;
+      }).filter((c): c is Chapter => c !== null);
+    };
+    const filterSubjects = (subjects: Subject[]) => {
+      return subjects.map(subject => {
+        if (subject.name.toLowerCase().includes(lowercasedFilter)) return subject;
+        const filteredChapters = filterChapters(subject.chapters);
+        return filteredChapters.length > 0 ? { ...subject, chapters: filteredChapters } : null;
+      }).filter((s): s is Subject => s !== null);
+    };
+    const filterYears = (years: Year[]) => {
+      return years.map(year => {
+        const filteredSubjects = filterSubjects(year.subjects);
+        return filteredSubjects.length > 0 ? { ...year, subjects: filteredSubjects } : null;
+      }).filter((y): y is Year => y !== null);
+    };
+
+    return programs.map(program => {
+      if (program.name.toLowerCase().includes(lowercasedFilter)) return program;
+      const filteredYears = filterYears(program.years);
+      return filteredYears.length > 0 ? { ...program, years: filteredYears } : null;
+    }).filter((p): p is Program => p !== null);
+
+  }, [programs, searchTerm]);
+
+  useEffect(() => {
+    // Reset selections when search term changes to avoid out-of-bounds errors
+    setSelectedProgramIndex(0);
+    setSelectedYearIndex(0);
+    setSelectedSubjectIndex(0);
+    setSelectedVideo(null);
+  }, [searchTerm]);
+
 
   const logWatchDuration = () => {
     if (watchState && currentUser.role === 'student' && currentUser.user) {
@@ -48,20 +96,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
   };
 
   useEffect(() => {
-    // This effect handles logging when the user navigates away or the component unmounts.
     window.addEventListener('beforeunload', logWatchDuration);
-    
     return () => {
         logWatchDuration();
         window.removeEventListener('beforeunload', logWatchDuration);
     };
-  }, [watchState]); // Re-bind if watchState changes to capture the latest state
+  }, [watchState]);
 
   const handleSelectVideo = (video: VideoLink, chapterId: number) => {
-    logWatchDuration(); // Log duration for the previous video before starting the new one
+    logWatchDuration();
     setSelectedVideo(video);
     if (currentUser.role === 'student') {
-      setWatchState({ video, chapterId, startTime: Date.now() }); // Start timer for the new video for students
+      setWatchState({ video, chapterId, startTime: Date.now() });
     }
   };
 
@@ -89,24 +135,24 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
     setSelectedVideo(null);
   };
 
-  const selectedProgram = programs[selectedProgramIndex];
+  const selectedProgram = filteredPrograms[selectedProgramIndex];
   const selectedYear = selectedProgram?.years[selectedYearIndex];
   const selectedSubject = selectedYear?.subjects[selectedSubjectIndex];
 
   return (
-    <div className="flex flex-col md:flex-row md:h-[calc(100vh-100px)] font-sans text-slate-900 -m-4 sm:-m-6 lg:-m-8">
-      {/* Main Content Area (Header + Video Player) */}
-      <div className="flex-1 flex flex-col md:order-2 min-w-0">
+    <div className="flex flex-col font-sans text-slate-900 -m-4 sm:-m-6 lg:-m-8">
         <Header 
-          programs={programs}
+          programs={filteredPrograms}
           selectedProgramIndex={selectedProgramIndex}
           selectedYearIndex={selectedYearIndex}
           selectedSubjectIndex={selectedSubjectIndex}
           onProgramChange={handleProgramChange}
           onYearChange={handleYearChange}
           onSubjectChange={handleSubjectChange}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-slate-50">
+        <main className="p-4 sm:p-6 lg:p-8 bg-slate-50">
           {currentUser.role === 'guest' && (
             <div className="bg-sky-100 border-l-4 border-sky-500 text-sky-800 p-4 rounded-md mb-6 shadow-sm" role="alert">
               <p className="font-bold">You are browsing as a guest.</p>
@@ -123,16 +169,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
           )}
           <VideoPlayer video={selectedVideo} />
         </main>
-      </div>
       
-      {/* Sidebar Area */}
-      <div className="w-full md:w-80 lg:w-96 md:flex-shrink-0 md:order-1 h-96 md:h-auto">
         <Sidebar
           chapters={selectedSubject?.chapters ?? []}
           selectedVideo={selectedVideo}
           onSelectVideo={handleSelectVideo}
         />
-      </div>
     </div>
   );
 };
