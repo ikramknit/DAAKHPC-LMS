@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Program, Subject, Chapter, VideoLink, Year, Student, ActivityLog } from '../types';
-import { BookOpenIcon, PencilIcon, TrashIcon, PlusIcon, CheckIcon, XIcon, ClipboardListIcon, UsersIcon, ChartBarIcon } from '../components/Icons';
+import { BookOpenIcon, PencilIcon, TrashIcon, PlusIcon, CheckIcon, XIcon, ClipboardListIcon, UsersIcon, ChartBarIcon, ChevronDownIcon } from '../components/Icons';
 import { getYouTubeVideoId } from '../constants';
 
 interface AdminPanelProps {
@@ -13,6 +13,7 @@ interface AdminPanelProps {
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, students, onUpdateStudents, activityLog }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({});
 
   // Course Management State
   const [newProgramName, setNewProgramName] = useState('');
@@ -20,7 +21,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
   const [newSubjectForYear, setNewSubjectForYear] = useState<{ [yearId: number]: string }>({});
   const [editingProgram, setEditingProgram] = useState<{id: number, name: string} | null>(null);
   const [editingSubject, setEditingSubject] = useState<{id: number, name: string} | null>(null);
-  const [managingContentFor, setManagingContentFor] = useState<number | null>(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const [editingChapter, setEditingChapter] = useState<{id: number, title: string} | null>(null);
   const [newVideo, setNewVideo] = useState<{ [chapterId: number]: { title: string, url: string } }>({});
@@ -34,6 +34,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
   // Activity Log State
   const [activityFilter, setActivityFilter] = useState<string>('all');
 
+  const toggleAccordion = (id: string) => {
+    setOpenAccordions(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // --- Course Handlers ---
   const handleAddProgram = (e: React.FormEvent) => {
@@ -54,8 +57,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
     setEditingProgram({id: program.id, name: program.name});
   };
 
-  const handleCancelEditProgram = () => {
+  const handleCancelEdit = () => {
     setEditingProgram(null);
+    setEditingSubject(null);
+    setEditingChapter(null);
+    setEditingVideo(null);
   };
   
   const handleSaveProgram = (programId: number) => {
@@ -116,15 +122,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
         onUpdatePrograms(updatedPrograms);
         setNewSubjectForYear({ ...newSubjectForYear, [yearId]: '' });
     }
-  };
-  
-  const handleEditSubject = (subject: {id: number, name: string}) => {
-    setEditingSubject({id: subject.id, name: subject.name});
-    setManagingContentFor(null);
-  };
-
-  const handleCancelEditSubject = () => {
-    setEditingSubject(null);
   };
   
   const handleSaveSubject = (programId: number, yearId: number, subjectId: number) => {
@@ -361,176 +358,113 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
   // --- Render Functions ---
   const renderOverview = () => (
     <div className="space-y-8">
-        <h3 className="text-2xl font-bold text-gray-800">Institute At a Glance</h3>
+        <h3 className="text-2xl font-bold text-slate-800">Institute At a Glance</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-indigo-50 p-6 rounded-xl">
-                <p className="text-sm font-medium text-indigo-600">Total Programs</p>
-                <p className="text-3xl font-bold text-indigo-900">{programs.length}</p>
+            <div className="bg-sky-50 p-6 rounded-xl border border-sky-200">
+                <p className="text-sm font-medium text-sky-600">Total Programs</p>
+                <p className="text-3xl font-bold text-sky-900">{programs.length}</p>
             </div>
-            <div className="bg-teal-50 p-6 rounded-xl">
+            <div className="bg-teal-50 p-6 rounded-xl border border-teal-200">
                 <p className="text-sm font-medium text-teal-600">Total Subjects</p>
                 <p className="text-3xl font-bold text-teal-900">{programs.reduce((acc, p) => acc + p.years.reduce((yAcc, y) => yAcc + y.subjects.length, 0), 0)}</p>
             </div>
-             <div className="bg-amber-50 p-6 rounded-xl">
+             <div className="bg-amber-50 p-6 rounded-xl border border-amber-200">
                 <p className="text-sm font-medium text-amber-600">Registered Students</p>
                 <p className="text-3xl font-bold text-amber-900">{students.length}</p>
             </div>
-        </div>
-        
-      {programs.map((program) => (
-        <div key={program.id} className="border border-gray-200 rounded-lg p-6 bg-white">
-          <h2 className="text-2xl font-semibold text-indigo-700">{program.name}</h2>
-          {program.years.length > 0 ? (
-            <div className="mt-4 space-y-6">
-              {program.years.map((year) => (
-                <div key={year.id} className="pl-4 border-l-4 border-indigo-200">
-                  <h3 className="text-xl font-medium text-gray-700">Year {year.year}</h3>
-                  {year.subjects.length > 0 ? (
-                     <ul className="mt-3 space-y-2">
-                      {year.subjects.map((subject) => (
-                        <li key={subject.id} className="flex items-center space-x-3">
-                          <BookOpenIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-600">{subject.name}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : ( <p className="mt-2 text-sm text-gray-400 italic">No subjects added.</p> )}
-                </div>
-              ))}
-            </div>
-          ) : ( <p className="mt-4 text-sm text-gray-400 italic">No years added.</p> )}
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderContentManager = (subject: Subject) => (
-    <div className="bg-gray-50 p-4 mt-2 rounded-md space-y-4">
-        <h4 className="text-lg font-semibold text-gray-800 border-b pb-2">Manage Content for: <span className="text-indigo-600">{subject.name}</span></h4>
-        <div className="space-y-3">
-            {subject.chapters.map(chapter => (
-                <div key={chapter.id} className="border border-gray-200 bg-white p-3 rounded">
-                    {editingChapter?.id === chapter.id ? (
-                        <div className="flex items-center gap-2 mb-2">
-                             <input type="text" value={editingChapter.title} onChange={e => setEditingChapter({...editingChapter, title: e.target.value})} className="flex-grow form-input" />
-                             <button onClick={() => handleSaveChapter(subject.id)} className="p-1 text-green-600 hover:bg-green-100 rounded-full"><CheckIcon className="h-4 w-4"/></button>
-                             <button onClick={() => setEditingChapter(null)} className="p-1 text-gray-500 hover:bg-gray-100 rounded-full"><XIcon className="h-4 w-4"/></button>
-                        </div>
-                    ) : (
-                        <div className="flex justify-between items-center mb-2">
-                            <h5 className="font-semibold">{chapter.title}</h5>
-                            <div className="flex items-center gap-1">
-                                <button onClick={() => setEditingChapter(chapter)} className="p-1 text-blue-500 hover:bg-blue-100 rounded-full"><PencilIcon className="h-4 w-4"/></button>
-                                <button onClick={() => handleDeleteChapter(subject.id, chapter.id)} className="p-1 text-red-500 hover:bg-red-100 rounded-full"><TrashIcon className="h-4 w-4"/></button>
-                            </div>
-                        </div>
-                    )}
-                    <div className="pl-4 space-y-2">
-                        {chapter.videos.map(video => (
-                           <div key={video.id}>
-                             {editingVideo?.id === video.id ? (
-                                <div className="p-2 border bg-blue-50 rounded space-y-2">
-                                    <input type="text" placeholder="Video Title" value={editingVideo.title} onChange={e => setEditingVideo({...editingVideo, title: e.target.value})} className="form-input w-full" />
-                                    <input type="text" placeholder="YouTube URL" value={editingVideo.url} onChange={e => setEditingVideo({...editingVideo, url: e.target.value})} className="form-input w-full" />
-                                     <div className="flex items-center justify-end gap-2">
-                                        <button onClick={() => handleSaveVideo(subject.id, chapter.id)} className="btn-xs btn-green">Save</button>
-                                        <button onClick={() => setEditingVideo(null)} className="btn-xs btn-gray">Cancel</button>
-                                    </div>
-                                </div>
-                             ) : (
-                                <div className="flex justify-between items-center text-sm">
-                                    <p className="text-gray-600">{video.title}</p>
-                                    <div className="flex items-center gap-1">
-                                        <button onClick={() => setEditingVideo(video)} className="p-1 text-blue-500 hover:bg-blue-100 rounded-full"><PencilIcon className="h-3 w-3"/></button>
-                                        <button onClick={() => handleDeleteVideo(subject.id, chapter.id, video.id)} className="p-1 text-red-500 hover:bg-red-100 rounded-full"><TrashIcon className="h-3 w-3"/></button>
-                                    </div>
-                                </div>
-                             )}
-                           </div>
-                        ))}
-                         <div className="flex items-center gap-2 pt-2">
-                            <input type="text" placeholder="Video Title" value={newVideo[chapter.id]?.title || ''} onChange={e => setNewVideo({...newVideo, [chapter.id]: {...(newVideo[chapter.id] || {url: ''}), title: e.target.value}})} className="form-input flex-grow text-sm" />
-                            <input type="text" placeholder="YouTube URL" value={newVideo[chapter.id]?.url || ''} onChange={e => setNewVideo({...newVideo, [chapter.id]: {...(newVideo[chapter.id] || {title: ''}), url: e.target.value}})} className="form-input flex-grow text-sm" />
-                            <button onClick={() => handleAddVideo(subject.id, chapter.id)} className="p-1.5 rounded-md text-white bg-green-600 hover:bg-green-700"><PlusIcon className="h-4 w-4"/></button>
-                         </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-        <div className="flex items-center gap-2 pt-2">
-             <input type="text" value={newChapterTitle} onChange={e => setNewChapterTitle(e.target.value)} placeholder="New Chapter Title" className="form-input flex-grow"/>
-             <button onClick={() => handleAddChapter(subject.id)} className="btn-xs btn-blue">Add Chapter</button>
         </div>
     </div>
   );
 
   const renderManagement = () => (
     <div className="space-y-6">
-      <div className="border border-gray-200 rounded-lg p-4">
-        <h3 className="font-semibold text-lg text-gray-700 mb-2">Add New Program</h3>
-        <form onSubmit={handleAddProgram} className="flex items-center gap-2">
-          <input type="text" value={newProgramName} onChange={(e) => setNewProgramName(e.target.value)} placeholder="Program Name" className="form-input flex-grow" />
-          <button type="submit" className="btn-icon btn-indigo"><PlusIcon className="h-5 w-5"/></button>
-        </form>
-      </div>
-      {programs.map((program) => (
-        <div key={program.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            {editingProgram?.id === program.id ? (
-              <div className="flex-grow flex items-center gap-2">
-                <input type="text" value={editingProgram.name} onChange={(e) => setEditingProgram({...editingProgram, name: e.target.value})} className="form-input flex-grow" />
-                <button onClick={() => handleSaveProgram(program.id)} className="btn-icon-sm text-green-600 hover:bg-green-100"><CheckIcon className="h-5 w-5"/></button>
-                <button onClick={handleCancelEditProgram} className="btn-icon-sm text-gray-500 hover:bg-gray-100"><XIcon className="h-5 w-5"/></button>
-              </div>
-            ) : ( <h2 className="text-xl font-semibold text-indigo-700">{program.name}</h2> )}
-            <div className="flex items-center gap-2">
-               <button onClick={() => handleEditProgram(program)} className="btn-icon-sm text-blue-600 hover:bg-blue-100"><PencilIcon className="h-5 w-5"/></button>
-               <button onClick={() => handleDeleteProgram(program.id)} className="btn-icon-sm text-red-600 hover:bg-red-100"><TrashIcon className="h-5 w-5"/></button>
-            </div>
-          </div>
-          {program.years.map((year) => (
-            <div key={year.id} className="pl-4 ml-4 border-l-2 border-gray-200 space-y-2">
-              <div className="flex items-center justify-between"><h3 className="font-medium text-gray-700">Year {year.year}</h3><button onClick={() => handleDeleteYear(program.id, year.id)} className="btn-icon-xs text-red-500 hover:bg-red-100"><TrashIcon className="h-4 w-4"/></button></div>
-               <div className="space-y-2 pl-4">
-                {year.subjects.map((subject) => (
-                  <div key={subject.id}>
-                    <div className="flex items-center justify-between">
-                       {editingSubject?.id === subject.id ? (
-                        <div className="flex-grow flex items-center gap-2">
-                          <input type="text" value={editingSubject.name} onChange={(e) => setEditingSubject({...editingSubject, name: e.target.value})} className="form-input-sm flex-grow"/>
-                          <button onClick={() => handleSaveSubject(program.id, year.id, subject.id)} className="btn-icon-xs text-green-600 hover:bg-green-100"><CheckIcon className="h-4 w-4"/></button>
-                          <button onClick={handleCancelEditSubject} className="btn-icon-xs text-gray-500 hover:bg-gray-100"><XIcon className="h-4 w-4"/></button>
-                        </div>
-                      ) : ( <p className="text-sm text-gray-600">{subject.name}</p> )}
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setManagingContentFor(managingContentFor === subject.id ? null : subject.id)} className={`btn-icon-xs ${managingContentFor === subject.id ? 'text-indigo-600' : 'text-gray-500'}`}><ClipboardListIcon className="h-4 w-4"/></button>
-                        <button onClick={() => handleEditSubject(subject)} className="btn-icon-xs text-blue-500 hover:bg-blue-100"><PencilIcon className="h-4 w-4"/></button>
-                        <button onClick={() => handleDeleteSubject(program.id, year.id, subject.id)} className="btn-icon-xs text-red-500 hover:bg-red-100"><TrashIcon className="h-4 w-4"/></button>
-                      </div>
-                    </div>
-                    {managingContentFor === subject.id && renderContentManager(subject)}
-                  </div>
-                ))}
-                <div className="flex items-center gap-2 pt-2">
-                  <input type="text" value={newSubjectForYear[year.id] || ''} onChange={(e) => setNewSubjectForYear({ ...newSubjectForYear, [year.id]: e.target.value })} placeholder="New Subject Name" className="form-input-sm flex-grow"/>
-                  <button onClick={() => handleAddSubject(program.id, year.id)} className="btn-icon-xs text-white bg-green-600 hover:bg-green-700"><PlusIcon className="h-4 w-4"/></button>
-                </div>
-              </div>
-            </div>
-          ))}
-          <div className="pl-4 ml-4 flex items-center gap-2 pt-2">
-              <input type="number" value={newYearForProgram[program.id] || ''} onChange={(e) => setNewYearForProgram({ ...newYearForProgram, [program.id]: e.target.value })} placeholder="Year" className="form-input-sm w-32"/>
-              <button onClick={() => handleAddYear(program.id)} className="btn-xs btn-blue">Add Year</button>
-          </div>
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <h3 className="font-semibold text-lg text-slate-700 mb-2">Add New Program</h3>
+            <form onSubmit={handleAddProgram} className="flex items-center gap-2">
+                <input type="text" value={newProgramName} onChange={(e) => setNewProgramName(e.target.value)} placeholder="Program Name" className="form-input flex-grow" />
+                <button type="submit" className="btn-icon btn-sky"><PlusIcon className="h-5 w-5"/></button>
+            </form>
         </div>
-      ))}
+
+        <div className="space-y-2">
+            {programs.map(program => (
+                <div key={program.id} className="accordion-item">
+                    <button onClick={() => toggleAccordion(`p-${program.id}`)} className="accordion-header">
+                        <span className="font-semibold text-slate-700">{program.name}</span>
+                        <div className="flex items-center gap-2">
+                            <button onClick={(e) => { e.stopPropagation(); handleEditProgram(program); }} className="btn-icon-sm text-blue-600 hover:bg-blue-100"><PencilIcon className="h-5 w-5"/></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteProgram(program.id); }} className="btn-icon-sm text-red-600 hover:bg-red-100"><TrashIcon className="h-5 w-5"/></button>
+                            <ChevronDownIcon className={`h-5 w-5 text-slate-500 transition-transform ${openAccordions[`p-${program.id}`] ? 'rotate-180' : ''}`} />
+                        </div>
+                    </button>
+                    {editingProgram?.id === program.id ? (
+                        <div className="p-4 bg-blue-50 border-t border-slate-200">
+                             <div className="flex-grow flex items-center gap-2">
+                                <input type="text" value={editingProgram.name} onChange={(e) => setEditingProgram({...editingProgram, name: e.target.value})} className="form-input flex-grow" />
+                                <button onClick={() => handleSaveProgram(program.id)} className="btn btn-green">Save</button>
+                                <button onClick={handleCancelEdit} className="btn btn-gray">Cancel</button>
+                            </div>
+                        </div>
+                    ) : (
+                        openAccordions[`p-${program.id}`] && (
+                            <div className="accordion-content">
+                                {program.years.map(year => (
+                                    <div key={year.id} className="accordion-item-inner">
+                                        <button onClick={() => toggleAccordion(`y-${year.id}`)} className="accordion-header-inner">
+                                            <span className="font-medium text-slate-600">Year {year.year}</span>
+                                            <div className="flex items-center gap-1">
+                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteYear(program.id, year.id); }} className="btn-icon-xs text-red-500 hover:bg-red-100"><TrashIcon className="h-4 w-4"/></button>
+                                                <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform ${openAccordions[`y-${year.id}`] ? 'rotate-180' : ''}`} />
+                                            </div>
+                                        </button>
+                                        {openAccordions[`y-${year.id}`] && (
+                                            <div className="accordion-content-inner">
+                                                {year.subjects.map(subject => (
+                                                     <div key={subject.id} className="py-2">
+                                                        {editingSubject?.id === subject.id ? (
+                                                             <div className="flex-grow flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+                                                                <input type="text" value={editingSubject.name} onChange={(e) => setEditingSubject({...editingSubject, name: e.target.value})} className="form-input-sm flex-grow"/>
+                                                                <button onClick={() => handleSaveSubject(program.id, year.id, subject.id)} className="btn-icon-xs text-green-600 hover:bg-green-100"><CheckIcon className="h-4 w-4"/></button>
+                                                                <button onClick={handleCancelEdit} className="btn-icon-xs text-slate-500 hover:bg-slate-100"><XIcon className="h-4 w-4"/></button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex justify-between items-center group">
+                                                                <p className="text-sm text-slate-600">{subject.name}</p>
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button onClick={() => setEditingSubject(subject)} className="btn-icon-xs text-blue-500 hover:bg-blue-100"><PencilIcon className="h-4 w-4"/></button>
+                                                                    <button onClick={() => handleDeleteSubject(program.id, year.id, subject.id)} className="btn-icon-xs text-red-500 hover:bg-red-100"><TrashIcon className="h-4 w-4"/></button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                     </div>
+                                                ))}
+                                                <div className="flex items-center gap-2 pt-2">
+                                                    <input type="text" value={newSubjectForYear[year.id] || ''} onChange={(e) => setNewSubjectForYear({ ...newSubjectForYear, [year.id]: e.target.value })} placeholder="New Subject Name" className="form-input-sm flex-grow"/>
+                                                    <button onClick={() => handleAddSubject(program.id, year.id)} className="btn-icon-xs text-white bg-green-600 hover:bg-green-700"><PlusIcon className="h-4 w-4"/></button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                <div className="p-2 mt-2">
+                                    <div className="flex items-center gap-2">
+                                        <input type="number" value={newYearForProgram[program.id] || ''} onChange={(e) => setNewYearForProgram({ ...newYearForProgram, [program.id]: e.target.value })} placeholder="Year" className="form-input-sm w-32"/>
+                                        <button onClick={() => handleAddYear(program.id)} className="btn-xs btn-blue">Add Year</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    )}
+                </div>
+            ))}
+        </div>
     </div>
   );
 
   const renderStudentManagement = () => (
     <div className="space-y-6">
-        <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-lg text-gray-700 mb-2">Add New Student</h3>
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <h3 className="font-semibold text-lg text-slate-700 mb-2">Add New Student</h3>
             <form onSubmit={handleAddStudent} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                 <input type="text" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} placeholder="Full Name" className="form-input"/>
                 <input type="tel" value={newStudent.mobile} onChange={e => setNewStudent({...newStudent, mobile: e.target.value})} placeholder="10-digit Mobile" className="form-input"/>
@@ -538,23 +472,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                     {programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
                 <input type="password" value={newStudent.password} onChange={e => setNewStudent({...newStudent, password: e.target.value})} placeholder="Password (min 6 chars)" className="form-input"/>
-                <button type="submit" className="btn btn-indigo justify-center md:col-span-4">Add Student</button>
+                <button type="submit" className="btn btn-sky justify-center md:col-span-4">Add Student</button>
             </form>
         </div>
 
-        <div className="bg-white rounded-lg">
+        <div className="bg-white rounded-lg border border-slate-200">
             <div className="overflow-x-auto">
                 <table className="w-full responsive-table">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-slate-50">
                         <tr>
                             <th className="th">Name</th>
                             <th className="th">Mobile Number</th>
                             <th className="th">Enrolled Course</th>
                             <th className="th">Status</th>
-                            <th className="th">Actions</th>
+                            <th className="th text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white">
+                    <tbody className="bg-white divide-y divide-slate-200">
                         {students.map(student => (
                             <React.Fragment key={student.id}>
                                 <tr>
@@ -566,13 +500,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                                             {student.isActive ? 'Active' : 'Inactive'}
                                         </button>
                                     </td>
-                                    <td className="td space-x-2" data-label="Actions">
-                                        <button onClick={() => setEditingStudent(student.id === editingStudent?.id ? null : student)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                        <button onClick={() => handleDeleteStudent(student.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                    <td className="td space-x-2 text-right" data-label="Actions">
+                                        <button onClick={() => setEditingStudent(student.id === editingStudent?.id ? null : student)} className="font-medium text-sky-600 hover:text-sky-900">Edit</button>
+                                        <button onClick={() => handleDeleteStudent(student.id)} className="font-medium text-red-600 hover:text-red-900">Delete</button>
                                     </td>
                                 </tr>
                                 {editingStudent?.id === student.id && (
-                                     <tr className="bg-indigo-50">
+                                     <tr className="bg-sky-50">
                                         <td colSpan={5} className="p-4">
                                             <div className="space-y-4 max-w-lg mx-auto">
                                                  <div>
@@ -627,41 +561,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                     {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.mobile})</option>)}
                 </select>
             </div>
-             <div className="bg-white rounded-lg">
+             <div className="bg-white rounded-lg border border-slate-200">
                 <div className="overflow-x-auto">
                     <table className="w-full responsive-table">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-slate-50">
                             <tr>
                                 <th className="th">Student</th>
                                 <th className="th">Course</th>
                                 <th className="th">Subject</th>
-                                <th className="th">Chapter</th>
                                 <th className="th">Video Title</th>
                                 <th className="th">Duration</th>
                                 <th className="th">Time</th>
                             </tr>
                         </thead>
-                         <tbody className="bg-white">
+                         <tbody className="bg-white divide-y divide-slate-200">
                             {filteredLogs.map(log => {
                                 const details = getActivityDetails(log);
                                 return (
                                 <tr key={log.id}>
                                     <td className="td" data-label="Student">
-                                        <div className="font-medium text-gray-900">{details.studentName}</div>
-                                        <div className="text-gray-500">{details.studentMobile}</div>
+                                        <div className="font-medium text-slate-900">{details.studentName}</div>
+                                        <div className="text-slate-500 text-xs">{details.studentMobile}</div>
                                     </td>
                                     <td className="td" data-label="Course">{details.programName}</td>
                                     <td className="td" data-label="Subject">{details.subjectName}</td>
-                                    <td className="td" data-label="Chapter">{details.chapterTitle}</td>
                                     <td className="td" data-label="Video Title">{details.videoTitle}</td>
-                                    <td className="td font-medium text-gray-800" data-label="Duration">{formatDuration(log.durationWatched)}</td>
+                                    <td className="td font-medium text-slate-800" data-label="Duration">{formatDuration(log.durationWatched)}</td>
                                     <td className="td" data-label="Time">{new Date(log.timestamp).toLocaleString()}</td>
                                 </tr>
                                 )
                             })}
                          </tbody>
                     </table>
-                     {filteredLogs.length === 0 && <p className="text-center text-gray-500 py-8">No activity recorded for this filter.</p>}
+                     {filteredLogs.length === 0 && <p className="text-center text-slate-500 py-8">No activity recorded for this filter.</p>}
                 </div>
              </div>
         </div>
@@ -669,18 +601,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
+    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
-        <p className="mt-2 text-gray-500">Manage the educational content and student users of the institute.</p>
+        <h1 className="text-3xl font-bold text-slate-800">Admin Panel</h1>
+        <p className="mt-2 text-slate-500">Manage the educational content and student users of the institute.</p>
       </div>
 
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-slate-200 mb-6">
         <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
-          <button onClick={() => setActiveTab('overview')} className={`tab-button ${activeTab === 'overview' ? 'tab-active' : ''}`}><BookOpenIcon className="h-5 w-5 mr-2"/>Course Overview</button>
-          <button onClick={() => setActiveTab('manage')} className={`tab-button ${activeTab === 'manage' ? 'tab-active' : ''}`}><PencilIcon className="h-5 w-5 mr-2"/>Manage Courses</button>
-          <button onClick={() => setActiveTab('students')} className={`tab-button ${activeTab === 'students' ? 'tab-active' : ''}`}><UsersIcon className="h-5 w-5 mr-2"/>Manage Students</button>
-          <button onClick={() => setActiveTab('activity')} className={`tab-button ${activeTab === 'activity' ? 'tab-active' : ''}`}><ChartBarIcon className="h-5 w-5 mr-2"/>Student Activity</button>
+          <button onClick={() => setActiveTab('overview')} className={`tab-button ${activeTab === 'overview' ? 'tab-active' : ''}`}><ChartBarIcon className="h-5 w-5 mr-2"/>Overview</button>
+          <button onClick={() => setActiveTab('manage')} className={`tab-button ${activeTab === 'manage' ? 'tab-active' : ''}`}><BookOpenIcon className="h-5 w-5 mr-2"/>Courses</button>
+          <button onClick={() => setActiveTab('students')} className={`tab-button ${activeTab === 'students' ? 'tab-active' : ''}`}><UsersIcon className="h-5 w-5 mr-2"/>Students</button>
+          <button onClick={() => setActiveTab('activity')} className={`tab-button ${activeTab === 'activity' ? 'tab-active' : ''}`}><ClipboardListIcon className="h-5 w-5 mr-2"/>Activity</button>
         </nav>
       </div>
 
@@ -691,58 +623,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
         {activeTab === 'activity' && renderStudentActivity()}
       </div>
         <style>{`
-          .form-input { @apply appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm; }
-          .form-input-sm { @apply appearance-none rounded-md relative block w-full px-2 py-1 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm; }
-          .btn { @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white; }
-          .btn-indigo { @apply bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500; }
+          .form-input { @apply appearance-none rounded-lg relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm; }
+          .form-input-sm { @apply appearance-none rounded-md relative block w-full px-2 py-1 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-sky-500 focus:border-sky-500 text-sm; }
+          .btn { @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white; }
+          .btn-sky { @apply bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500; }
           .btn-blue { @apply bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500; }
           .btn-green { @apply bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500; }
-          .btn-gray { @apply bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500; }
-          .btn-xs { @apply px-2.5 py-1.5 text-xs; }
-          .btn-icon { @apply inline-flex items-center justify-center p-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white; }
-          .btn-icon-sm { @apply p-2 rounded-full; }
+          .btn-gray { @apply bg-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500; }
+          .btn-xs { @apply px-2.5 py-1.5 text-xs rounded-md; }
+          .btn-icon { @apply inline-flex items-center justify-center p-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white; }
+          .btn-icon-sm { @apply p-1.5 rounded-full; }
           .btn-icon-xs { @apply p-1 rounded-full; }
-          .tab-button { @apply inline-flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300; }
-          .tab-active { @apply border-indigo-500 text-indigo-600; }
-          .th { @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider; }
-          .td { @apply px-6 py-4 whitespace-nowrap text-sm text-gray-600; }
-          .label { @apply text-sm font-medium text-gray-700; }
+          .tab-button { @apply inline-flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300; }
+          .tab-active { @apply border-sky-500 text-sky-600; }
+          .th { @apply px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider; }
+          .td { @apply px-4 py-3 whitespace-nowrap text-sm text-slate-600; }
+          .label { @apply text-sm font-medium text-slate-700; }
+          .accordion-item { @apply bg-white border border-slate-200 rounded-lg; }
+          .accordion-header { @apply flex justify-between items-center w-full p-4 text-left; }
+          .accordion-content { @apply p-4 border-t border-slate-200; }
+          .accordion-item-inner { @apply border border-slate-200 rounded-md mt-2; }
+          .accordion-header-inner { @apply flex justify-between items-center w-full p-2 text-left; }
+          .accordion-content-inner { @apply p-2 border-t border-slate-200; }
 
           @media screen and (max-width: 767px) {
-            .responsive-table thead {
-              display: none;
-            }
-            .responsive-table tbody {
-              display: block;
-              width: 100%;
-            }
-            .responsive-table tr {
-              display: block;
-              margin-bottom: 1.5rem;
-              border: 1px solid #e2e8f0;
-              border-radius: 0.5rem;
-              box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
-              overflow: hidden;
-            }
-            .responsive-table td {
-              display: block;
-              width: 100%;
-              padding: 0.75rem 1rem;
-              text-align: right;
-              position: relative;
-              border-bottom: 1px solid #e2e8f0;
-            }
-            .responsive-table tr td:last-child {
-              border-bottom: 0;
-            }
-            .responsive-table td::before {
-              content: attr(data-label);
-              position: absolute;
-              left: 1rem;
-              font-weight: 600;
-              text-align: left;
-              color: #4a5568;
-            }
+            .responsive-table thead { display: none; }
+            .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; }
+            .responsive-table tr { margin-bottom: 1.5rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); overflow: hidden; }
+            .responsive-table td { padding: 0.75rem 1rem; text-align: right; position: relative; border-bottom: 1px solid #e2e8f0; }
+            .responsive-table tr td:last-child { border-bottom: 0; }
+            .responsive-table td::before { content: attr(data-label); position: absolute; left: 1rem; font-weight: 600; text-align: left; color: #4a5568; }
           }
         `}</style>
     </div>

@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({
 
   const Dropdown = ({ label, value, onChange, disabled, children, id }: { label: string, value: number, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, disabled: boolean, children: React.ReactNode, id: string }) => (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-600 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-slate-600 mb-1">
         {label}
       </label>
       <div className="relative">
@@ -37,11 +37,11 @@ const Header: React.FC<HeaderProps> = ({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className="w-full appearance-none bg-white border border-gray-300 rounded-md py-2.5 pl-3 pr-10 text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="w-full appearance-none bg-white border border-slate-300 rounded-lg py-2.5 pl-4 pr-10 text-base text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition disabled:bg-slate-100 disabled:cursor-not-allowed"
         >
           {children}
         </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
           <ChevronDownIcon className="h-5 w-5" />
         </div>
       </div>
@@ -49,22 +49,22 @@ const Header: React.FC<HeaderProps> = ({
   );
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-4">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/A._P._J._Abdul_Kalam.jpg/440px-A._P._J._Abdul_Kalam.jpg" 
               alt="Dr. APJ Abdul Kalam" 
-              className="h-16 w-16 rounded-full object-cover shadow-md"
+              className="h-16 w-16 rounded-full object-cover shadow-md border-2 border-white"
             />
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Dr. APJ Abdul Kalam</h1>
-              <p className="text-sm text-gray-500">Educational Institute</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Dr. APJ Abdul Kalam</h1>
+              <p className="text-sm text-slate-500">Educational Institute</p>
             </div>
           </div>
         </div>
-        <div className="py-4 border-t border-gray-200">
+        <div className="py-4 border-t border-slate-200">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Dropdown
               id="program-select"

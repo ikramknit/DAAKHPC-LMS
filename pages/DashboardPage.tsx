@@ -94,9 +94,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
   const selectedSubject = selectedYear?.subjects[selectedSubjectIndex];
 
   return (
-    <div className="flex flex-col md:flex-row md:h-[calc(100vh-100px)] font-sans bg-gray-100 text-gray-900 -m-4 sm:-m-6 lg:-m-8">
+    <div className="flex flex-col md:flex-row md:h-[calc(100vh-100px)] font-sans text-slate-900 -m-4 sm:-m-6 lg:-m-8">
       {/* Main Content Area (Header + Video Player) */}
-      <div className="flex-1 flex flex-col md:order-2">
+      <div className="flex-1 flex flex-col md:order-2 min-w-0">
         <Header 
           programs={programs}
           selectedProgramIndex={selectedProgramIndex}
@@ -106,15 +106,15 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
           onYearChange={handleYearChange}
           onSubjectChange={handleSubjectChange}
         />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-slate-50">
           {currentUser.role === 'guest' && (
-            <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 rounded-md mb-6" role="alert">
+            <div className="bg-sky-100 border-l-4 border-sky-500 text-sky-800 p-4 rounded-md mb-6 shadow-sm" role="alert">
               <p className="font-bold">You are browsing as a guest.</p>
               <p>
                 <a 
                   href="#login" 
                   onClick={(e) => { e.preventDefault(); onNavigate('#login'); }} 
-                  className="font-semibold underline hover:text-indigo-800"
+                  className="font-semibold underline hover:text-sky-900"
                 >
                   Log in or create an account
                 </a> to track your progress and access all features.
@@ -126,7 +126,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
       </div>
       
       {/* Sidebar Area */}
-      <div className="w-full md:w-80 lg:w-96 md:h-full md:flex-shrink-0 md:order-1 border-t md:border-t-0 md:border-r border-gray-200 h-96 md:h-auto">
+      <div className="w-full md:w-80 lg:w-96 md:flex-shrink-0 md:order-1 h-96 md:h-auto">
         <Sidebar
           chapters={selectedSubject?.chapters ?? []}
           selectedVideo={selectedVideo}

@@ -159,7 +159,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans text-gray-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <Navbar currentUser={currentUser} onLogout={handleLogout} onNavigate={handleNavigate} />
       <div className="p-4 sm:p-6 lg:p-8">
         {renderPage()}

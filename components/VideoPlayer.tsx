@@ -178,12 +178,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   
   if (!video) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center bg-white p-8 rounded-2xl shadow-lg">
-        <div className="p-4 sm:p-6 bg-indigo-100 rounded-full mb-6">
-          <BookOpenIcon className="w-12 h-12 sm:w-16 sm:h-16 text-indigo-500" />
+      <div className="flex flex-col items-center justify-center h-full text-center bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+        <div className="p-4 sm:p-6 bg-sky-100 rounded-full mb-6">
+          <BookOpenIcon className="w-12 h-12 sm:w-16 sm:h-16 text-sky-500" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome to Your Course!</h2>
-        <p className="mt-2 text-gray-500 max-w-md">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800">Welcome to Your Course!</h2>
+        <p className="mt-2 text-slate-500 max-w-md">
           Select a video from the course content list to begin your learning journey.
         </p>
       </div>
@@ -195,7 +195,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
 
   return (
     <div className="w-full">
-      <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 px-4 sm:px-0">
+      <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-4 px-4 sm:px-0">
         {video.title}
       </h3>
       <div
@@ -247,7 +247,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
       </div>
       <style>{`
           .range-sm {
-            background: linear-gradient(to right, #6366f1 var(--progress-percent, 0%), #4b5563 var(--progress-percent, 0%));
+            background: linear-gradient(to right, #0ea5e9 var(--progress-percent, 0%), #4b5563 var(--progress-percent, 0%));
             transition: background 0.1s ease-out;
           }
           .range-sm::-webkit-slider-thumb {
