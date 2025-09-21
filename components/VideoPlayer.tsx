@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import type { VideoLink } from '../types';
 import { BookOpenIcon, PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon } from './Icons';
@@ -180,10 +179,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   if (!video) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center bg-white p-8 rounded-2xl shadow-lg">
-        <div className="p-6 bg-indigo-100 rounded-full mb-6">
-          <BookOpenIcon className="w-16 h-16 text-indigo-500" />
+        <div className="p-4 sm:p-6 bg-indigo-100 rounded-full mb-6">
+          <BookOpenIcon className="w-12 h-12 sm:w-16 sm:h-16 text-indigo-500" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-800">Welcome to Your Course!</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome to Your Course!</h2>
         <p className="mt-2 text-gray-500 max-w-md">
           Select a video from the course content list to begin your learning journey.
         </p>
@@ -196,17 +195,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
 
   return (
     <div className="w-full">
-      <h3 className="text-2xl font-bold text-gray-800 mb-4 px-4 sm:px-0">
+      <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 px-4 sm:px-0">
         {video.title}
       </h3>
       <div
-        className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden shadow-2xl relative group"
+        className="aspect-16/9 bg-black rounded-xl overflow-hidden shadow-2xl relative group"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setShowControls(false)}
         aria-label="Video Player"
       >
         <div ref={playerContainerRef} className="w-full h-full" id="youtube-player-container"></div>
-        <div className={`absolute bottom-0 left-0 right-0 p-4 transition-opacity duration-300 bg-gradient-to-t from-black/70 to-transparent ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute bottom-0 left-0 right-0 p-2 sm:p-4 transition-opacity duration-300 bg-gradient-to-t from-black/70 to-transparent ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           
           <input
             type="range"
@@ -219,14 +218,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
             aria-label="Video progress"
           />
 
-          <div className="flex items-center justify-between mt-2 text-white text-sm">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between mt-2 text-white text-xs sm:text-sm">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'}>
-                {isPlaying ? <PauseIcon className="w-8 h-8"/> : <PlayIcon className="w-8 h-8"/>}
+                {isPlaying ? <PauseIcon className="w-7 h-7 sm:w-8 sm:h-8"/> : <PlayIcon className="w-7 h-7 sm:w-8 sm:h-8"/>}
               </button>
               <div className="flex items-center gap-2 group/volume">
                 <button onClick={toggleMute} aria-label={isMuted ? 'Unmute' : 'Mute'}>
-                  {isMuted || volume === 0 ? <VolumeOffIcon className="w-6 h-6"/> : <VolumeUpIcon className="w-6 h-6"/>}
+                  {isMuted || volume === 0 ? <VolumeOffIcon className="w-5 h-5 sm:w-6 sm:h-6"/> : <VolumeUpIcon className="w-5 h-5 sm:w-6 sm:h-6"/>}
                 </button>
                 <input
                   type="range"

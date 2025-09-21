@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Program, Subject, Chapter, VideoLink, Year, Student, ActivityLog } from '../types';
 import { BookOpenIcon, PencilIcon, TrashIcon, PlusIcon, CheckIcon, XIcon, ClipboardListIcon, UsersIcon, ChartBarIcon } from '../components/Icons';
@@ -543,9 +542,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
             </form>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-white rounded-lg">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="w-full responsive-table">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="th">Name</th>
@@ -555,26 +554,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                             <th className="th">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white">
                         {students.map(student => (
                             <React.Fragment key={student.id}>
                                 <tr>
-                                    <td className="td">{student.name}</td>
-                                    <td className="td">{student.mobile}</td>
-                                    <td className="td">{programs.find(p => p.id === student.programId)?.name || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="td" data-label="Name">{student.name}</td>
+                                    <td className="td" data-label="Mobile Number">{student.mobile}</td>
+                                    <td className="td" data-label="Enrolled Course">{programs.find(p => p.id === student.programId)?.name || 'N/A'}</td>
+                                    <td className="td" data-label="Status">
                                         <button onClick={() => handleToggleStudentStatus(student.id)} className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${student.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                             {student.isActive ? 'Active' : 'Inactive'}
                                         </button>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                    <td className="td space-x-2" data-label="Actions">
                                         <button onClick={() => setEditingStudent(student.id === editingStudent?.id ? null : student)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
                                         <button onClick={() => handleDeleteStudent(student.id)} className="text-red-600 hover:text-red-900">Delete</button>
                                     </td>
                                 </tr>
                                 {editingStudent?.id === student.id && (
-                                     <tr>
-                                        <td colSpan={5} className="p-4 bg-indigo-50">
+                                     <tr className="bg-indigo-50">
+                                        <td colSpan={5} className="p-4">
                                             <div className="space-y-4 max-w-lg mx-auto">
                                                  <div>
                                                     <label className="label">Name</label>
@@ -628,9 +627,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                     {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.mobile})</option>)}
                 </select>
             </div>
-             <div className="bg-white p-4 rounded-lg shadow-sm border">
+             <div className="bg-white rounded-lg">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="w-full responsive-table">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="th">Student</th>
@@ -642,21 +641,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
                                 <th className="th">Time</th>
                             </tr>
                         </thead>
-                         <tbody className="bg-white divide-y divide-gray-200">
+                         <tbody className="bg-white">
                             {filteredLogs.map(log => {
                                 const details = getActivityDetails(log);
                                 return (
                                 <tr key={log.id}>
-                                    <td className="td">
+                                    <td className="td" data-label="Student">
                                         <div className="font-medium text-gray-900">{details.studentName}</div>
                                         <div className="text-gray-500">{details.studentMobile}</div>
                                     </td>
-                                    <td className="td">{details.programName}</td>
-                                    <td className="td">{details.subjectName}</td>
-                                    <td className="td">{details.chapterTitle}</td>
-                                    <td className="td">{details.videoTitle}</td>
-                                    <td className="td font-medium text-gray-800">{formatDuration(log.durationWatched)}</td>
-                                    <td className="td">{new Date(log.timestamp).toLocaleString()}</td>
+                                    <td className="td" data-label="Course">{details.programName}</td>
+                                    <td className="td" data-label="Subject">{details.subjectName}</td>
+                                    <td className="td" data-label="Chapter">{details.chapterTitle}</td>
+                                    <td className="td" data-label="Video Title">{details.videoTitle}</td>
+                                    <td className="td font-medium text-gray-800" data-label="Duration">{formatDuration(log.durationWatched)}</td>
+                                    <td className="td" data-label="Time">{new Date(log.timestamp).toLocaleString()}</td>
                                 </tr>
                                 )
                             })}
@@ -708,6 +707,43 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ programs, onUpdatePrograms, stu
           .th { @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider; }
           .td { @apply px-6 py-4 whitespace-nowrap text-sm text-gray-600; }
           .label { @apply text-sm font-medium text-gray-700; }
+
+          @media screen and (max-width: 767px) {
+            .responsive-table thead {
+              display: none;
+            }
+            .responsive-table tbody {
+              display: block;
+              width: 100%;
+            }
+            .responsive-table tr {
+              display: block;
+              margin-bottom: 1.5rem;
+              border: 1px solid #e2e8f0;
+              border-radius: 0.5rem;
+              box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+              overflow: hidden;
+            }
+            .responsive-table td {
+              display: block;
+              width: 100%;
+              padding: 0.75rem 1rem;
+              text-align: right;
+              position: relative;
+              border-bottom: 1px solid #e2e8f0;
+            }
+            .responsive-table tr td:last-child {
+              border-bottom: 0;
+            }
+            .responsive-table td::before {
+              content: attr(data-label);
+              position: absolute;
+              left: 1rem;
+              font-weight: 600;
+              text-align: left;
+              color: #4a5568;
+            }
+          }
         `}</style>
     </div>
   );
