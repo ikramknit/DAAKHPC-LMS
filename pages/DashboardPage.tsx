@@ -112,6 +112,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
         setSelectedVideo(null);
         setWatchState(null);
     } else {
+        // This logic ensures only one video can be played at a time.
+        // By setting a single `selectedVideo` in the state, React unmounts the
+        // component for the previous video (stopping its playback) and mounts
+        // a new one for the selected video.
         setSelectedVideo(video);
         if (currentUser.role === 'student') {
             setWatchState({ video, chapterId, startTime: Date.now() });
