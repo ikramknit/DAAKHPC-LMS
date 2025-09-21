@@ -1,7 +1,7 @@
-
 import React from 'react';
 import type { Chapter, VideoLink } from '../types';
 import { PlayIcon } from './Icons';
+import VideoPlayer from './VideoPlayer';
 
 interface SidebarProps {
   chapters: Chapter[];
@@ -27,27 +27,34 @@ const Sidebar: React.FC<SidebarProps> = ({ chapters, selectedVideo, onSelectVide
                       const isSelected = selectedVideo?.id === video.id;
                       return (
                         <li key={video.id}>
-                          <button
-                            onClick={() => onSelectVideo(video, chapter.id)}
-                            className={`w-full text-left p-3 rounded-lg transition-all duration-200 border-2 ${
-                              isSelected
-                                ? 'bg-white border-sky-500 shadow-lg scale-[1.02]'
-                                : 'bg-slate-50 border-transparent hover:bg-white hover:border-slate-300 hover:shadow-sm'
-                            }`}
-                            aria-current={isSelected ? 'page' : undefined}
-                          >
-                            <p className={`font-semibold text-sm leading-tight ${isSelected ? 'text-sky-600' : 'text-slate-800'}`}>{video.title}</p>
-                            <div className="mt-2.5 rounded-md overflow-hidden relative group/thumb">
-                              <img
-                                src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
-                                alt={`Thumbnail for ${video.title}`}
-                                className="w-full h-auto"
-                              />
-                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300">
-                                <PlayIcon className="w-10 h-10 text-white drop-shadow-lg" />
+                          {isSelected ? (
+                            <div className="p-3 rounded-lg transition-all duration-200 border-2 bg-white border-sky-500 shadow-lg scale-[1.02]">
+                               <button onClick={() => onSelectVideo(video, chapter.id)} className="w-full text-left">
+                                <p className={`font-semibold text-sm leading-tight text-sky-600`}>{video.title}</p>
+                              </button>
+                              <div className="mt-2.5 rounded-md overflow-hidden">
+                                <VideoPlayer video={video} />
                               </div>
                             </div>
-                          </button>
+                          ) : (
+                            <button
+                              onClick={() => onSelectVideo(video, chapter.id)}
+                              className={`w-full text-left p-3 rounded-lg transition-all duration-200 border-2 bg-slate-50 border-transparent hover:bg-white hover:border-slate-300 hover:shadow-sm`}
+                              aria-current={isSelected ? 'page' : undefined}
+                            >
+                              <p className={`font-semibold text-sm leading-tight text-slate-800`}>{video.title}</p>
+                              <div className="mt-2.5 rounded-md overflow-hidden relative group/thumb">
+                                <img
+                                  src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                                  alt={`Thumbnail for ${video.title}`}
+                                  className="w-full h-auto"
+                                />
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300">
+                                  <PlayIcon className="w-10 h-10 text-white drop-shadow-lg" />
+                                </div>
+                              </div>
+                            </button>
+                          )}
                         </li>
                       );
                     })}

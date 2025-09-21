@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
-import VideoPlayer from '../components/VideoPlayer';
 import Header from '../components/Header';
 import type { Program, VideoLink, Student, ActivityLog, Year, Subject, Chapter } from '../types';
 import { FilterIcon } from '../components/Icons';
@@ -106,10 +104,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
   }, [watchState]);
 
   const handleSelectVideo = (video: VideoLink, chapterId: number) => {
+    const isDeselecting = selectedVideo?.id === video.id;
+    
     logWatchDuration();
-    setSelectedVideo(video);
-    if (currentUser.role === 'student') {
-      setWatchState({ video, chapterId, startTime: Date.now() });
+
+    if (isDeselecting) {
+        setSelectedVideo(null);
+        setWatchState(null);
+    } else {
+        setSelectedVideo(video);
+        if (currentUser.role === 'student') {
+            setWatchState({ video, chapterId, startTime: Date.now() });
+        }
     }
   };
 
@@ -172,10 +178,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
             </div>
           )}
 
-          <div className="flex justify-between items-center mb-4">
-             <h3 className="text-xl sm:text-2xl font-bold text-slate-800">
-                {selectedVideo ? selectedVideo.title : 'Course Content'}
-             </h3>
+          <div className="flex justify-end items-center mb-4">
              <button
                 onClick={() => setIsFilterDrawerOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
@@ -185,7 +188,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
              </button>
           </div>
 
-          <VideoPlayer video={selectedVideo} />
         </main>
       
         <Sidebar

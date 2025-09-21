@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import type { VideoLink } from '../types';
-import { BookOpenIcon, PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon, ExpandIcon, ShrinkIcon } from './Icons';
+import { PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon, ExpandIcon, ShrinkIcon } from './Icons';
 
 // FIX: Define VideoPlayerProps interface for the component's props.
 interface VideoPlayerProps {
@@ -212,17 +211,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   };
   
   if (!video) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
-        <div className="p-4 bg-sky-100 rounded-full mb-6">
-          <BookOpenIcon className="w-10 h-10 sm:w-12 sm:h-12 text-sky-500" />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Welcome to Your Course!</h2>
-        <p className="mt-2 text-slate-500 max-w-md">
-          Select a video from the course content list to begin your learning journey.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
