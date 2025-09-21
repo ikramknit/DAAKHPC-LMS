@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { VideoLink } from '../types';
-import { BookOpenIcon, PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon } from './Icons';
+import { BookOpenIcon, PlayIcon, PauseIcon, VolumeUpIcon, VolumeOffIcon, ExpandIcon, ShrinkIcon } from './Icons';
 
 // FIX: Define VideoPlayerProps interface for the component's props.
 interface VideoPlayerProps {
@@ -40,6 +41,8 @@ const loadYouTubeAPI = (callback: () => void) => {
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
+  const playerWrapperRef = useRef<HTMLDivElement>(null);
+  const progressContainerRef = useRef<HTMLDivElement>(null);
   const progressIntervalRef = useRef<number | null>(null);
   const controlsTimeoutRef = useRef<number | null>(null);
 
@@ -50,6 +53,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   const [volume, setVolume] = useState(100);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     loadYouTubeAPI(() => {
@@ -61,6 +65,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
+  }, []);
+  
+  useEffect(() => {
+    const onFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
 
   useEffect(() => {
@@ -136,6 +148,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
     setCurrentTime(time);
     playerRef.current.seekTo(time, true);
   };
+  
+  const handleSeekClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!playerRef.current || !progressContainerRef.current || duration === 0) return;
+    const rect = progressContainerRef.current.getBoundingClientRect();
+    const clickPosition = e.clientX - rect.left;
+    const width = rect.width;
+    const newTime = (clickPosition / width) * duration;
+    
+    setCurrentTime(newTime);
+    playerRef.current.seekTo(newTime, true);
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!playerRef.current) return;
@@ -156,6 +179,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
     } else {
       playerRef.current.mute();
       setIsMuted(true);
+    }
+  };
+  
+  const toggleFullscreen = () => {
+    if (!playerWrapperRef.current) return;
+
+    if (!document.fullscreenElement) {
+        playerWrapperRef.current.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+    } else {
+        document.exitFullscreen();
     }
   };
 
@@ -195,10 +230,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
 
   return (
     <div className="w-full">
-      <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-4 px-4 sm:px-0">
-        {video.title}
-      </h3>
       <div
+        ref={playerWrapperRef}
         className="aspect-16/9 bg-black rounded-xl overflow-hidden shadow-2xl relative group"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setShowControls(false)}
@@ -207,18 +240,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
         <div ref={playerContainerRef} className="w-full h-full" id="youtube-player-container"></div>
         <div className={`absolute bottom-0 left-0 right-0 p-2 sm:p-4 transition-opacity duration-300 bg-gradient-to-t from-black/70 to-transparent ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={currentTime}
-            onChange={handleSeek}
-            className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm"
-            style={{ '--progress-percent': `${progressPercent}%` } as React.CSSProperties}
-            aria-label="Video progress"
-          />
+          <div ref={progressContainerRef} onClick={handleSeekClick} className="w-full py-2 cursor-pointer">
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              value={currentTime}
+              onChange={handleSeek}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer range-sm"
+              style={{ '--progress-percent': `${progressPercent}%` } as React.CSSProperties}
+              aria-label="Video progress"
+            />
+          </div>
 
-          <div className="flex items-center justify-between mt-2 text-white text-xs sm:text-sm">
+          <div className="flex items-center justify-between mt-0 text-white text-xs sm:text-sm">
             <div className="flex items-center gap-2 sm:gap-4">
               <button onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'}>
                 {isPlaying ? <PauseIcon className="w-7 h-7 sm:w-8 sm:h-8"/> : <PlayIcon className="w-7 h-7 sm:w-8 sm:h-8"/>}
@@ -239,8 +275,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
                 />
               </div>
             </div>
-            <div className="font-mono" aria-live="off">
-              <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="font-mono" aria-live="off">
+                <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+              </div>
+              <button onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+                  {isFullscreen ? <ShrinkIcon className="w-5 h-5 sm:w-6 sm:h-6" /> : <ExpandIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+              </button>
             </div>
           </div>
         </div>

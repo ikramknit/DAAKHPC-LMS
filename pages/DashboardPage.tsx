@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import VideoPlayer from '../components/VideoPlayer';
 import Header from '../components/Header';
 import type { Program, VideoLink, Student, ActivityLog, Year, Subject, Chapter } from '../types';
+import { FilterIcon } from '../components/Icons';
 
 type CurrentUser = {
   role: 'student' | 'admin' | 'guest';
@@ -24,6 +25,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
   const [selectedSubjectIndex, setSelectedSubjectIndex] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<VideoLink | null>(null);
   const [watchState, setWatchState] = useState<{ video: VideoLink; chapterId: number; startTime: number } | null>(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   const filteredPrograms = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -142,6 +144,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
   return (
     <div className="flex flex-col font-sans text-slate-900 -m-4 sm:-m-6 lg:-m-8">
         <Header 
+          isOpen={isFilterDrawerOpen}
+          onClose={() => setIsFilterDrawerOpen(false)}
           programs={filteredPrograms}
           selectedProgramIndex={selectedProgramIndex}
           selectedYearIndex={selectedYearIndex}
@@ -167,6 +171,20 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ programs, currentUser, on
               </p>
             </div>
           )}
+
+          <div className="flex justify-between items-center mb-4">
+             <h3 className="text-xl sm:text-2xl font-bold text-slate-800">
+                {selectedVideo ? selectedVideo.title : 'Course Content'}
+             </h3>
+             <button
+                onClick={() => setIsFilterDrawerOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
+             >
+                <FilterIcon className="h-5 w-5"/>
+                <span className="hidden sm:inline">Filters & Search</span>
+             </button>
+          </div>
+
           <VideoPlayer video={selectedVideo} />
         </main>
       
